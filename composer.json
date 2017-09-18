@@ -1,6 +1,7 @@
 {
     "name": "adamb/ttestapplink",
     "description": "Link the Theory Test data to the App",
+    "license": "None",
     "type": "library",
     "authors": [
         {
@@ -9,7 +10,6 @@
         }
     ],
     "require": {
-        "adamb/database": "^1.0",
         "adamb/ttest": "^2.2",
         "guzzlehttp/guzzle": "^6.3"
     },
