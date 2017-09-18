@@ -2,18 +2,11 @@
 
 namespace AppLink;
 
-use DBAL\Database;
+use TheoryTest\Car\TheoryTest;
 
-class AppLink {
-    protected static $db;
-    protected static $user;
-
-    CONST TESTTABLE = 'users_test_progress';
-    CONST QUESTIONSTABLE = 'theory_questions_2016';
-    CONST DATAURL = 'http://www.ldcsupport.co.uk/app_online_reg/appphp/';
+class AppLink extends TheoryTest{
+    CONST DATAURL = 'https://www.ldcsupport.co.uk/app_online_reg/appphp/';
     
-    public $testType = 'car';
-    public $passmark = 43;
     public $numIncomplete = 0;
     public $numFlagged = 0;
     public $numSyncTests = 14;
@@ -29,14 +22,9 @@ class AppLink {
     protected $resultsArray = array();
     
     protected $newTests = false;
-
-    /**
-     * Set the database connection to be available to all of the functions
-     * @param Database $db Must be an instance of the Database class
-     */
-    public function __construct(Database $db) {
-        self::$db = $db;
-        self::$user = new User(self::$db);
+    
+    public function getUserID() {
+        parent::getUserID();
     }
     
     /**
@@ -46,7 +34,7 @@ class AppLink {
      * @return array|boolean If the test exists the information will be returned as an array else will return false
      */
     public function getLocalTest($userID, $testID){
-        return self::$db->select(self::TESTTABLE, array('user_id' => $userID, 'test_id' => $testID, 'type' => $this->testType, 'status' => 2));
+        return self::$db->select($this->progressTable, array('user_id' => $userID, 'test_id' => $testID, 'type' => $this->getTestType(), 'status' => 2));
     }
 
     /**
@@ -185,7 +173,7 @@ class AppLink {
     }
     
     /**
-     * Checks to see if the user has an assciated online account
+     * Checks to see if the user has an associated online account
      * @return boolean|int If no account exists will return false else will return the userID
      */
     public function hasUserAccount(){
@@ -210,8 +198,8 @@ class AppLink {
         $localTest = $this->getLocalTest($userID, $testID);
         if($downloadTest['testdate'] > $localTest['complete']){
             $this->updateDataFormat($downloadTest);
-            self::$db->delete(self::TESTTABLE, array('user_id' => $userID, 'test_id' => $testID, 'type' => $this->testType));
-            return self::$db->insert(self::TESTTABLE, array('user_id' => $userID, 'questions' => serialize($this->questionsArray), 'answers' => serialize($this->answersArray), 'results' => serialize($this->resultsArray), 'test_id' => $testID, 'started' => $downloadTest['testdate'], 'complete' => $downloadTest['testdate'], 'time_taken' => $downloadTest['timeTaken'], 'totalscore' => $downloadTest['finalscore'], 'status' => $this->testStatus($downloadTest['finalscore']), 'type' => $this->testType));
+            self::$db->delete($this->progressTable, array('user_id' => $userID, 'test_id' => $testID, 'type' => $this->getTestType()));
+            return self::$db->insert($this->progressTable, array('user_id' => $userID, 'questions' => serialize($this->questionsArray), 'answers' => serialize($this->answersArray), 'results' => serialize($this->resultsArray), 'test_id' => $testID, 'started' => $downloadTest['testdate'], 'complete' => $downloadTest['testdate'], 'time_taken' => $downloadTest['timeTaken'], 'totalscore' => $downloadTest['finalscore'], 'status' => $this->testStatus($downloadTest['finalscore']), 'type' => $this->getTestType()));
         }
         return false;
     }
@@ -319,7 +307,7 @@ class AppLink {
      * @return int Will return 1 if the user passed else will return 2
      */
     protected function testStatus($score){
-        if($score >= $this->passmark){return 1;}
+        if($score >= $this->getPassmark()){return 1;}
         return 2;
     }
     
@@ -329,7 +317,7 @@ class AppLink {
      * @return int Returns the DSA Category number of the current question
      */
     protected function getDSACat($prim){
-        $dsacat = self::$db->select(self::QUESTIONSTABLE, array('prim' => $prim), array('dsacat'));
+        $dsacat = self::$db->select($this->questionsTable, array('prim' => $prim), array('dsacat'));
         return $dsacat['dsacat'];
     }
     
