@@ -3,6 +3,7 @@
 namespace AppLink;
 
 use TheoryTest\Car\TheoryTest;
+use GuzzleHttp\Client;
 
 class AppLink extends TheoryTest{
     CONST DATAURL = 'https://www.ldcsupport.co.uk/app_online_reg/appphp/';
@@ -354,7 +355,7 @@ class AppLink extends TheoryTest{
     
     /**
      * Sets all of the variables ready to insert into my database in a converted format from the data in Glen/Phil's database to one compatible with mine
-     * @param array $testdata This should be the test data array retreived from the HTML data of Glen/Phil's database
+     * @param array $testdata This should be the test data array retrieved from the HTML data of Glen/Phil's database
      * @return void
      */
     protected function updateDataFormat($testdata){
@@ -368,26 +369,18 @@ class AppLink extends TheoryTest{
     }
     
     /**
-     * Gets the HTML data from a given url
+     * Gets the HTML data from a given URL
      * @param string $url The URL you wish to get the data from
      * @param array|null $postData If you wish to set $_POST data to send to the page set the array values as array('$key' => $value);
-     * @param int $timeout The timeout for the URL to load in seconds
      * @return string The HTML data will be returned as a string
      */
-    protected function getData($url, $postData = NULL, $timeout = 5){
-       $ch = curl_init();
-       curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-       curl_setopt($ch, CURLOPT_URL, $url);
-       if(is_array($postData)){
-            foreach($postData as $key => $value) {
-                $fields .= $key.'='.$value.'&';
-            }
-            rtrim($fields, '&');
-            curl_setopt($ch, CURLOPT_POST, count($postData));
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-       }
-       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-       curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-       return curl_exec($ch);
+    protected function getData($url, $postData = NULL){
+        $guzzle = new Client();
+        if(is_array($postData)){
+            return $guzzle->post($url, $postData);
+        }
+        else{
+            return $guzzle->request('GET', $url);
+        }
     }
 }
