@@ -6,7 +6,7 @@ use TheoryTest\Car\TheoryTest;
 use GuzzleHttp\Client;
 
 class AppLink extends TheoryTest{
-    CONST DATAURL = 'https://www.ldcsupport.co.uk/app_online_reg/appphp/';
+    protected static $dataURL;
     
     public $numIncomplete = 0;
     public $numFlagged = 0;
@@ -24,10 +24,26 @@ class AppLink extends TheoryTest{
     
     protected $newTests = false;
     
-    public function getUserID() {
-        parent::getUserID();
+    public function setDataURL($url){
+        self::$dataURL = $url;
     }
     
+    public function getAppID(){
+        
+    }
+    
+    public function setAppID(){
+        
+    }
+    
+    public function getLastSyncDate(){
+        
+    }
+    
+    public function setLastSyncDate(){
+        
+    }
+
     /**
      * Gets Test data from the local database
      * @param int $userID The user ID of the person you wish to get the test for
@@ -50,13 +66,30 @@ class AppLink extends TheoryTest{
             $serverTest = $this->getServerTestSummary($this->getUniqueUser($userID), $testID);
             if(($testInfo['complete'] > $serverTest['date'])){
                 $testData = array();
-                $this->createUploadformat($testInfo);
-                $postData = array('userID' => intval($this->getUniqueUser($userID)), 'testID' => intval($testID), 'score' => intval($testInfo['totalscore']), 'dateTime' => $testInfo['complete'], 'timetaken' => $testInfo['time_taken'], 'tqa' => intval(50), 'qID' => implode(", ", $this->questionID[$testID]), 'prim' => implode(", ", $this->primQuestions[$testID]), 'ma1' => implode(", ", $this->answers[$testID][1]), 'ma2' => implode(", ", $this->answers[$testID][2]), 'ma3' => implode(", ", $this->answers[$testID][3]), 'ma4' => implode(", ", $this->answers[$testID][4]), 'ma5' => implode(", ", $this->answers[$testID][5]), 'ma6' => implode(", ", $this->answers[$testID][6]), 'questionStatus' => implode(", ", $this->qStatus[$testID]), 'flagged' => implode(", ", $this->flagged[$testID]));
+                $this->createUploadFormat($testInfo);
+                $postData = array(
+                    'userID' => intval($this->getUniqueUser($userID)),
+                    'testID' => intval($testID),
+                    'score' => intval($testInfo['totalscore']),
+                    'dateTime' => $testInfo['complete'],
+                    'timetaken' => $testInfo['time_taken'],
+                    'tqa' => intval(50),
+                    'qID' => implode(", ", $this->questionID[$testID]),
+                    'prim' => implode(", ", $this->primQuestions[$testID]),
+                    'ma1' => implode(", ", $this->answers[$testID][1]),
+                    'ma2' => implode(", ", $this->answers[$testID][2]),
+                    'ma3' => implode(", ", $this->answers[$testID][3]),
+                    'ma4' => implode(", ", $this->answers[$testID][4]),
+                    'ma5' => implode(", ", $this->answers[$testID][5]),
+                    'ma6' => implode(", ", $this->answers[$testID][6]),
+                    'questionStatus' => implode(", ", $this->qStatus[$testID]),
+                    'flagged' => implode(", ", $this->flagged[$testID])
+                );
                 parse_str($this->getData(self::DATAURL.'uploadTest2.php', $postData), $testData);
-                if($testData['done'] == 'true'){
-                    //self::$user->setLastSyncDate(date('Y-m-d H:i:s'));
-                    return $testID;
-                }
+            }
+            if($testData['done'] === 'true'){
+                $this->setLastSyncDate(date('Y-m-d H:i:s'));
+                return $testID;
             }
         }
         return false;
@@ -97,7 +130,7 @@ class AppLink extends TheoryTest{
      * @return boolean If their is newer test data on the server will return true else will return false
      */
     public function checkForNewerTest($userID, $testID, $date = NULL){
-        if(!$date){$date = self::$user->getLastSyncDate();}
+        if(!$date){$date = $this->getLastSyncDate();}
         if($this->checkForAnyNewer($userID, $date)){
             $serverInfo = $this->getServerTestSummary($userID, $testID);
             if($serverInfo['date'] > $date){
@@ -118,22 +151,16 @@ class AppLink extends TheoryTest{
             if($this->newTests == 1){return true;}else{return false;}
         }
         elseif($this->getUniqueUser($userID)){
-            if(!$date){$date = self::$user->getLastSyncDate();}
+            if(!$date){$date = $this->getLastSyncDate();}
             $testData = array();
             parse_str($this->getData(self::DATAURL.'checkNewer.php', array('userID' => intval($this->getUniqueUser($userID)), 'date' => $date)), $testData);
             if($testData['cant'] == 'true'){
                 $this->newTests = 1;
                 return true;
             }
-            else{
-                $this->newTests = 0;
-                return false;
-            }
         }
-        else{
-            $this->newTests = 0;
-            return false;
-        }
+        $this->newTests = 0;
+        return false;
     }
     
     /**
@@ -165,8 +192,8 @@ class AppLink extends TheoryTest{
      * @return int|boolean If an app user ID exists will return that userID else will return false
      */
     public function getUniqueUser($userID){
-        if(self::$user->getAppID($userID)){
-            return self::$user->getAppID($userID);
+        if($this->getAppID($userID)){
+            return $this->getAppID($userID);
         }
         else{
             return $this->hasUserAccount();
@@ -182,7 +209,7 @@ class AppLink extends TheoryTest{
         $userInfo = self::$user->getUserInfo();
         parse_str($this->getData(self::DATAURL.'userExists.php', array('email' => $userInfo['email'])), $testData);
         if($testData['exists'] == 'true'){
-            self::$user->setAppID($testData['userID']);
+            $this->setAppID($testData['userID']);
             return $testData['userID'];
         }
         return false;
@@ -210,7 +237,7 @@ class AppLink extends TheoryTest{
      * @param array $testInfo This is the information returned from my local database
      * @return void
      */
-    protected function createUploadformat($testInfo){
+    protected function createUploadFormat($testInfo){
         $userAnswers = unserialize(stripslashes($testInfo['answers']));
         $questions = unserialize(stripslashes($testInfo['questions']));
         foreach($userAnswers as $i => $answer){
