@@ -8,6 +8,8 @@ use GuzzleHttp\Client;
 class AppLink extends TheoryTest{
     protected static $dataURL;
     
+    protected $appID;
+    
     public $numIncomplete = 0;
     public $numFlagged = 0;
     public $numSyncTests = 14;
@@ -29,7 +31,15 @@ class AppLink extends TheoryTest{
     }
     
     public function getAppID(){
-        
+        if(is_numeric($this->appID)){
+            return $this->appID;
+        }
+        $userInfo = self::$user->getUserInfo();
+        if(is_numeric($userInfo['app_userid'])){
+            $this->appID = $userInfo['app_userid'];
+            return $this->appID;
+        }
+        return false;
     }
     
     public function setAppID(){
@@ -37,7 +47,8 @@ class AppLink extends TheoryTest{
     }
     
     public function getLastSyncDate(){
-        
+        $userInfo = self::$user->getUserInfo();
+        return $userInfo['app_sync_date'];
     }
     
     public function setLastSyncDate(){
@@ -252,7 +263,7 @@ class AppLink extends TheoryTest{
     /**
      * Converts my status values to those which Glen/Phil use
      * @param int $status The status of the question in my database
-     * @return int The status value compatible with Glen/Phil's database
+     * @return int The status value compatible with the Software/App database
      */
     protected function convertStatus($status){
         if($status == 4){return 1;} // Correct
@@ -261,8 +272,8 @@ class AppLink extends TheoryTest{
     }
     
     /**
-     * Converts Glen/Phil's status values to those which I use
-     * @param int $status The status value from Glen/Phil's database
+     * Converts the Software/App status values to those which I use
+     * @param int $status The status value from the Software/App database
      * @return int The status of for my database
      */
     public function getStatusValue($status){
@@ -275,7 +286,7 @@ class AppLink extends TheoryTest{
     }
     
     /**
-     * Converts the numerical values for flagged values in my database to test values for Glen/Phil's database
+     * Converts the numerical values for flagged values in my database to test values for the Software/App database
      * @param int $flaggedStatus The flagged status for the question in my database
      * @return string If the question is flagged will return 'flagged' else will be empty
      */
@@ -298,7 +309,7 @@ class AppLink extends TheoryTest{
     }
     
     /**
-     * Converts the alphabetical string value in my database to numerous integer values for answers selected in Glen/Phil's database
+     * Converts the alphabetical string value in my database to numerous integer values for answers selected in the Software/App database
      * @param string $answer This should be the string value of the answers selected for the questions
      * @param int $testID This should be the test ID for the answers as when uploading multiple causes issues if not set
      * @return void
@@ -313,8 +324,8 @@ class AppLink extends TheoryTest{
     }
     
     /**
-     * Converts the numerous integer values for answers selected in Glen/Phil's database to an alphabetical string
-     * @param array $testdata This should be the test data return from Glen/Phil's database
+     * Converts the numerous integer values for answers selected in the Software/App database to an alphabetical string
+     * @param array $testdata This should be the test data return from the Software/App database
      * @param int $arraykey This should be the array key value of the question (normally 0 - 49)
      * @return string Returns an alphabetical string for answers selected
      */
@@ -351,7 +362,7 @@ class AppLink extends TheoryTest{
     
     /**
      * Converts the data to an test overview to insert into my database
-     * @param array $testData This should be the test data array retrieved from Glen/Phil's database
+     * @param array $testData This should be the test data array retrieved from the Software/App database
      * @return void
      */
     protected function getTestResults($testData){
@@ -381,8 +392,8 @@ class AppLink extends TheoryTest{
     }
     
     /**
-     * Sets all of the variables ready to insert into my database in a converted format from the data in Glen/Phil's database to one compatible with mine
-     * @param array $testdata This should be the test data array retrieved from the HTML data of Glen/Phil's database
+     * Sets all of the variables ready to insert into my database in a converted format from the data in the Software/App database to one compatible with mine
+     * @param array $testdata This should be the test data array retrieved from the HTML data of the Software/App database
      * @return void
      */
     protected function updateDataFormat($testdata){
