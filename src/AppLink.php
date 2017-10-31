@@ -26,10 +26,18 @@ class AppLink extends TheoryTest{
     
     protected $newTests = false;
     
+    /**
+     * Sets the URL where the test data can be transmitted back and forth
+     * @param string $url This should be the full URL where the data can be transmitted
+     */
     public function setDataURL($url){
         self::$dataURL = $url;
     }
     
+    /**
+     * Returns the users application ID if the have registered
+     * @return int|false If the user has registered and has an application ID will return the ID else will return false
+     */
     public function getAppID(){
         if(is_numeric($this->appID)){
             return $this->appID;
@@ -42,17 +50,39 @@ class AppLink extends TheoryTest{
         return false;
     }
     
-    public function setAppID(){
-        
+    /**
+     * Sets the current user database to include the users application ID so it can be more easily accessed
+     * @param int $app_user_id This should be the users application ID
+     * @return boolean If the information has been added will return true else will return false
+     */
+    public function setAppID($app_user_id){
+        if(is_numeric($app_user_id) && $app_user_id >= 1){
+            return self::$db->update(self::$user->table_users, array('app_userid' => intval($app_user_id)), array('uid' => $this->getUserID()));
+        }
+        return false;
     }
     
+    /**
+     * Gets the time that the tests were last synced
+     * @return datetime This will be the time datetime when the tests were last synced 
+     */
     public function getLastSyncDate(){
         $userInfo = self::$user->getUserInfo();
         return $userInfo['app_sync_date'];
     }
     
-    public function setLastSyncDate(){
-        
+    /**
+     * Set the last sync date for the given user
+     * @param datetime|false $date This should be the date that you wish set as the last sync time in the Y-m-d H:i:s format or set to false for current datetime
+     * @return boolean If the information is updated in the database will return true else returns false
+     */
+    public function setLastSyncDate($date = false){
+        if($date === false || \DateTime::createFromFormat('Y-m-d H:i:s', $date) === false){
+            $dateTime = new \DateTime();
+            $dateTime->setTimezone(self::$user->site_timezone);
+            $date = $dateTime->format('Y-m-d H:i:s');
+        }
+        return self::$db->update(self::$user->table_users, array('app_sync_date' => $date), array('uid' => $this->getUserID()));
     }
 
     /**
@@ -99,7 +129,7 @@ class AppLink extends TheoryTest{
                 parse_str($this->getData(self::DATAURL.'uploadTest2.php', $postData), $testData);
             }
             if($testData['done'] === 'true'){
-                $this->setLastSyncDate(date('Y-m-d H:i:s'));
+                $this->setLastSyncDate();
                 return $testID;
             }
         }
