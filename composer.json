@@ -1,7 +1,7 @@
 {
     "name": "adamb/ttestapplink",
     "description": "Link the Theory Test data to the App",
-    "license": "None",
+    "license": "proprietary",
     "type": "library",
     "authors": [
         {
