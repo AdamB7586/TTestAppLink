@@ -394,9 +394,8 @@ class AppLink extends TheoryTest{
     /**
      * Converts the data to an test overview to insert into my database
      * @param array $testData This should be the test data array retrieved from the Software/App database
-     * @return void
      */
-    protected function getTestResults($testData){
+    protected function convertResults($testData){
         for($i = 0; $i < $testData['count']; $i++){
              if($this->getStatusValue($testData['status'.$i]) == 4){$type = 'correct';}
              else{$type = 'incorrect';}
@@ -434,7 +433,7 @@ class AppLink extends TheoryTest{
             $this->answersArray[($i + 1)]['answer'] = $this->getAnswerString($testdata, $i);
             $this->answersArray[($i + 1)]['flagged'] = $this->getFlaggedStatus($testdata['flagged'.$i]);
         }
-        $this->getTestResults($testdata);
+        $this->convertResults($testdata);
     }
     
     /**
