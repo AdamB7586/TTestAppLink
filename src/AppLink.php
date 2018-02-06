@@ -4,6 +4,7 @@ namespace AppLink;
 
 use TheoryTest\Car\TheoryTest;
 use GuzzleHttp\Client;
+use DateTime;
 
 class AppLink extends TheoryTest{
     protected static $dataURL;
@@ -77,8 +78,8 @@ class AppLink extends TheoryTest{
      * @return boolean If the information is updated in the database will return true else returns false
      */
     public function setLastSyncDate($date = false){
-        if($date === false || \DateTime::createFromFormat('Y-m-d H:i:s', $date) === false){
-            $dateTime = new \DateTime();
+        if($date === false || DateTime::createFromFormat('Y-m-d H:i:s', $date) === false){
+            $dateTime = new DateTime();
             $dateTime->setTimezone(self::$user->site_timezone);
             $date = $dateTime->format('Y-m-d H:i:s');
         }
@@ -228,8 +229,8 @@ class AppLink extends TheoryTest{
     }
     
     /**
-     * As the database are different the user must have a unique userID in Glen/Phils database to work with their products
-     * @param int $userID This should be the user ID for the user in the local database which should have an associated one in Glen/Phils database based on the unique email address
+     * As the database are different the user must have a unique userID in Glen/Phil's database to work with their products
+     * @param int $userID This should be the user ID for the user in the local database which should have an associated one in Glen/Phil's database based on the unique email address
      * @return int|boolean If an app user ID exists will return that userID else will return false
      */
     public function getUniqueUser($userID){
