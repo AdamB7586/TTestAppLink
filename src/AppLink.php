@@ -269,7 +269,7 @@ class AppLink extends TheoryTest{
         if($downloadTest['testdate'] > $localTest['complete']){
             $this->updateDataFormat($downloadTest);
             self::$db->delete($this->progressTable, array('user_id' => $userID, 'test_id' => $testID, 'type' => $this->getTestType()));
-            return self::$db->insert($this->progressTable, array('user_id' => $userID, 'questions' => serialize($this->questionsArray), 'answers' => serialize($this->answersArray), 'results' => serialize($this->resultsArray), 'test_id' => $testID, 'started' => $downloadTest['testdate'], 'complete' => $downloadTest['testdate'], 'time_taken' => $downloadTest['timeTaken'], 'totalscore' => $downloadTest['finalscore'], 'status' => $this->testStatus($downloadTest['finalscore']), 'type' => $this->getTestType()));
+            return self::$db->insert($this->progressTable, array('user_id' => $userID, 'questions' => serialize($this->questionsArray), 'answers' => serialize($this->answersArray), 'results' => serialize($this->resultsArray), 'test_id' => $testID, 'started' => $downloadTest['testdate'], 'complete' => $downloadTest['testdate'], 'time_taken' => $downloadTest['timeTaken'], 'totalscore' => $downloadTest['finalscore'], 'status' => $this->getTestStatus($downloadTest['finalscore']), 'type' => $this->getTestType()));
         }
         return false;
     }
@@ -376,7 +376,7 @@ class AppLink extends TheoryTest{
      * @param int $score The number of questions the user answered correctly
      * @return int Will return 1 if the user passed else will return 2
      */
-    protected function testStatus($score){
+    protected function getTestStatus($score){
         if($score >= $this->getPassmark()){return 1;}
         return 2;
     }
@@ -413,7 +413,7 @@ class AppLink extends TheoryTest{
         $this->resultsArray['percent']['incorrect'] = round((($testData['count'] - $testData['finalscore']) / $testData['count']) * 100);
         $this->resultsArray['percent']['flagged'] = round(($this->numFlagged / $testData['count']) * 100);
         $this->resultsArray['percent']['incomplete'] = round(($this->numIncomplete / $testData['count']) * 100);
-        if($this->testStatus($testData['finalscore']) == 1){
+        if($this->getTestStatus($testData['finalscore']) == 1){
             $this->resultsArray['status'] = 'pass';
         }
         else{
