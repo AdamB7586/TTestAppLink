@@ -15,7 +15,7 @@ class AppLinkTest extends TestCase{
     protected $appLink;
 
     protected function setUp() {
-        $this->db = new Database($hostname, $username, $password, $database);
+        $this->db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE'], '127.0.0.1', false, true, $GLOBALS['DRIVER']);
         $this->template = New Smarty();
         $this->user = new User($this->db);
         $this->appLink = new AppLink($this->db, $this->template, $this->user);
