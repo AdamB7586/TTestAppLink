@@ -3,13 +3,16 @@ language: php
 php:
   - '7.0'
   - '7.1'
-  
-before_install:
-  - mysql -e 'CREATE DATABASE IF NOT EXISTS `theory_db`;'
+
+services:
+  - mysql
   
 before_script:
   - composer self-update
   - composer --version
+  
+before_install:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS `theory_db`;'
 
 install:
   - composer install
