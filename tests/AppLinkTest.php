@@ -3,26 +3,26 @@ namespace AppLink\Tests;
 
 use PHPUnit\Framework\TestCase;
 use DBAL\Database;
-use UserAuth\User;
+use TheoryTest\Car\User;
 use Smarty;
 use AppLink\AppLink;
 
 class AppLinkTest extends TestCase{
     
-    protected $db;
-    protected $template;
-    protected $user;
-    protected $appLink;
+    protected static $db;
+    protected static $template;
+    protected static $user;
+    protected static $appLink;
 
-    protected function setUp() {
-        $this->db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
-        $this->template = New Smarty();
-        $this->user = new User($this->db);
-        $this->appLink = new AppLink($this->db, $this->template, $this->user);
+    public static function setUpBeforeClass() {
+        self::$db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
+        self::$template = New Smarty();
+        self::$user = new User(self::$db);
+        self::$appLink = new AppLink(self::$db, self::$template, self::$user);
     }
     
-    protected function tearDown() {
-        $this->appLink = null;
+    public static function tearDownAfterClass() {
+        self::$appLink = null;
     }
     
     /**
