@@ -25,7 +25,7 @@ class AppLink extends TheoryTest{
     protected $answersArray = array();
     protected $resultsArray = array();
     
-    protected $newTests = false;
+    protected $newTests = 0;
     
     /**
      * Sets the URL where the test data can be transmitted back and forth
@@ -41,11 +41,11 @@ class AppLink extends TheoryTest{
      */
     public function getAppID(){
         if(is_numeric($this->appID)){
-            return $this->appID;
+            return intval($this->appID);
         }
         $userInfo = self::$user->getUserInfo();
         if(is_numeric($userInfo['app_userid'])){
-            $this->appID = $userInfo['app_userid'];
+            $this->appID = intval($userInfo['app_userid']);
             return $this->appID;
         }
         return false;
@@ -57,7 +57,7 @@ class AppLink extends TheoryTest{
      * @return boolean If the information has been added will return true else will return false
      */
     public function setAppID($app_user_id){
-        if(is_numeric($app_user_id) && $app_user_id >= 1){
+        if(is_numeric($app_user_id) && intval($app_user_id) >= 1){
             return self::$db->update(self::$user->table_users, array('app_userid' => intval($app_user_id)), array('uid' => $this->getUserID()));
         }
         return false;
@@ -156,7 +156,7 @@ class AppLink extends TheoryTest{
      * @return array|boolean Will return the array data from the HTML data string if exists else will return false
      */
     public function getServerTestSummary($userID, $testID){
-        if($this->getUniqueUser($userID)){
+        if($this->getUniqueUser($userID) !== false){
             $testData = array();
             parse_str($this->getData(self::DATAURL.'testOverview.php', array('userID' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID)), $testData);
             return $testData;
@@ -189,10 +189,10 @@ class AppLink extends TheoryTest{
      * @return boolean Returns true if newer tests exist else return false
      */
     public function checkForAnyNewer($userID, $date = NULL){
-        if(is_numeric($this->newTests)){
+        if($this->newTests >= 1){
             if($this->newTests == 1){return true;}else{return false;}
         }
-        elseif($this->getUniqueUser($userID)){
+        elseif($this->getUniqueUser($userID) !== false){
             if(!$date){$date = $this->getLastSyncDate();}
             $testData = array();
             parse_str($this->getData(self::DATAURL.'checkNewer.php', array('userID' => intval($this->getUniqueUser($userID)), 'date' => $date)), $testData);
