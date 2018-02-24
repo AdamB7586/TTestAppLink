@@ -189,8 +189,8 @@ class AppLink extends TheoryTest{
      * @return boolean Returns true if newer tests exist else return false
      */
     public function checkForAnyNewer($userID, $date = NULL){
-        if($this->newTests >= 1){
-            if($this->newTests == 1){return true;}else{return false;}
+        if($this->newTests == 1){
+            return true;
         }
         elseif($this->getUniqueUser($userID) !== false){
             if(!$date){$date = $this->getLastSyncDate();}
