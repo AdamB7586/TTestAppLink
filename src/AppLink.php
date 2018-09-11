@@ -38,13 +38,14 @@ class AppLink extends TheoryTest{
     
     /**
      * Returns the users application ID if the have registered
+     * @param int|false $userID This should be the user id that you are getting the information for
      * @return int|false If the user has registered and has an application ID will return the ID else will return false
      */
-    public function getAppID(){
+    public function getAppID($userID = false){
         if(is_numeric($this->appID)){
             return $this->appID;
         }
-        $userInfo = self::$user->getUserInfo();
+        $userInfo = $this->user->getUserInfo($userID);
         if(is_numeric($userInfo['app_userid'])){
             $this->appID = $userInfo['app_userid'];
             return $this->appID;
@@ -59,7 +60,7 @@ class AppLink extends TheoryTest{
      */
     public function setAppID($app_user_id){
         if(is_numeric($app_user_id) && $app_user_id >= 1){
-            return self::$db->update(self::$user->table_users, array('app_userid' => $app_user_id), array('uid' => $this->getUserID()));
+            return self::$db->update($this->user->table_users, array('app_userid' => $app_user_id), array('uid' => $this->getUserID()));
         }
         return false;
     }
@@ -69,7 +70,7 @@ class AppLink extends TheoryTest{
      * @return datetime This will be the time datetime when the tests were last synced 
      */
     public function getLastSyncDate(){
-        return self::$user->getUserInfo()['app_sync_date'];
+        return $this->user->getUserInfo()['app_sync_date'];
     }
     
     /**
@@ -80,10 +81,10 @@ class AppLink extends TheoryTest{
     public function setLastSyncDate($date = false){
         if($date === false || DateTime::createFromFormat('Y-m-d H:i:s', $date) === false){
             $dateTime = new DateTime();
-            $dateTime->setTimezone(self::$user->site_timezone);
+            $dateTime->setTimezone($this->user->site_timezone);
             $date = $dateTime->format('Y-m-d H:i:s');
         }
-        return self::$db->update(self::$user->table_users, array('app_sync_date' => $date), array('uid' => $this->getUserID()));
+        return self::$db->update($this->user->table_users, array('app_sync_date' => $date), array('uid' => $this->getUserID()));
     }
 
     /**
@@ -250,7 +251,7 @@ class AppLink extends TheoryTest{
      */
     public function hasUserAccount(){
         $testData = [];
-        parse_str($this->getData($this->dataURL.'userExists.php', array('email' => self::$user->getUserInfo()['email'])), $testData);
+        parse_str($this->getData($this->dataURL.'userExists.php', array('email' => $this->user->getUserInfo()['email'])), $testData);
         if($testData['exists'] == 'true'){
             $this->setAppID($testData['userID']);
             return $testData['userID'];
