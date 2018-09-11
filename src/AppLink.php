@@ -7,7 +7,8 @@ use GuzzleHttp\Client;
 use DateTime;
 
 class AppLink extends TheoryTest{
-    protected static $dataURL;
+    
+    protected $dataURL;
     
     protected $appID;
     
@@ -41,11 +42,11 @@ class AppLink extends TheoryTest{
      */
     public function getAppID(){
         if(is_numeric($this->appID)){
-            return intval($this->appID);
+            return $this->appID;
         }
         $userInfo = self::$user->getUserInfo();
         if(is_numeric($userInfo['app_userid'])){
-            $this->appID = intval($userInfo['app_userid']);
+            $this->appID = $userInfo['app_userid'];
             return $this->appID;
         }
         return false;
@@ -57,8 +58,8 @@ class AppLink extends TheoryTest{
      * @return boolean If the information has been added will return true else will return false
      */
     public function setAppID($app_user_id){
-        if(is_numeric($app_user_id) && intval($app_user_id) >= 1){
-            return self::$db->update(self::$user->table_users, array('app_userid' => intval($app_user_id)), array('uid' => $this->getUserID()));
+        if(is_numeric($app_user_id) && $app_user_id >= 1){
+            return self::$db->update(self::$user->table_users, array('app_userid' => $app_user_id), array('uid' => $this->getUserID()));
         }
         return false;
     }
@@ -106,16 +107,16 @@ class AppLink extends TheoryTest{
         if(is_numeric($uniqueUser) && ($testID <= 14)){
             $testInfo = $this->getLocalTest($userID, $testID);
             $serverTest = $this->getServerTestSummary($uniqueUser, $testID);
+            $testData = [];
             if(($testInfo['complete'] > $serverTest['date'])){
-                $testData = [];
                 $this->createUploadFormat($testInfo);
-                $postData = array(
-                    'userID' => intval($uniqueUser),
-                    'testID' => intval($testID),
+                $postData = [
+                    'userID' => $uniqueUser,
+                    'testID' => $testID,
                     'score' => intval($testInfo['totalscore']),
                     'dateTime' => $testInfo['complete'],
                     'timetaken' => $testInfo['time_taken'],
-                    'tqa' => intval(50),
+                    'tqa' => 50,
                     'qID' => implode(", ", $this->questionID[$testID]),
                     'prim' => implode(", ", $this->primQuestions[$testID]),
                     'ma1' => implode(", ", $this->answers[$testID][1]),
@@ -126,8 +127,8 @@ class AppLink extends TheoryTest{
                     'ma6' => implode(", ", $this->answers[$testID][6]),
                     'questionStatus' => implode(", ", $this->qStatus[$testID]),
                     'flagged' => implode(", ", $this->flagged[$testID])
-                );
-                parse_str($this->getData(self::DATAURL.'uploadTest2.php', $postData), $testData);
+                ];
+                parse_str($this->getData($this->dataURL.'uploadTest2.php', $postData), $testData);
             }
             if($testData['done'] === 'true'){
                 $this->setLastSyncDate();
@@ -145,7 +146,7 @@ class AppLink extends TheoryTest{
      */
     public function downloadTest($userID, $testID){
         $testData = [];
-        parse_str($this->getData(self::DATAURL.'downloadTest.php', array('servernumber' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID)), $testData);
+        parse_str($this->getData($this->dataURL.'downloadTest.php', array('servernumber' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID)), $testData);
         return $testData;
     }
     
@@ -158,7 +159,7 @@ class AppLink extends TheoryTest{
     public function getServerTestSummary($userID, $testID){
         if($this->getUniqueUser($userID) !== false){
             $testData = [];
-            parse_str($this->getData(self::DATAURL.'testOverview.php', array('userID' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID)), $testData);
+            parse_str($this->getData($this->dataURL.'testOverview.php', array('userID' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID)), $testData);
             return $testData;
         }
         return false;
@@ -195,7 +196,7 @@ class AppLink extends TheoryTest{
         elseif($this->getUniqueUser($userID) !== false){
             if(!$date){$date = $this->getLastSyncDate();}
             $testData = [];
-            parse_str($this->getData(self::DATAURL.'checkNewer.php', array('userID' => intval($this->getUniqueUser($userID)), 'date' => $date)), $testData);
+            parse_str($this->getData($this->dataURL.'checkNewer.php', array('userID' => intval($this->getUniqueUser($userID)), 'date' => $date)), $testData);
             if($testData['cant'] == 'true'){
                 $this->newTests = 1;
                 return true;
@@ -213,6 +214,8 @@ class AppLink extends TheoryTest{
     public function anyNewToupload($userID){
         $uniqueUser = $this->getUniqueUser($userID);
         if(is_numeric($uniqueUser)){
+            $tests = [];
+            $complete = [];
             for($testID = 1; $testID <= $this->numSyncTests; $testID++){
                 $testInfo = $this->getLocalTest($userID, $testID);
                 if($testInfo){
@@ -220,9 +223,9 @@ class AppLink extends TheoryTest{
                     $complete[] = $testInfo['complete'];
                 }
             }
-            if($tests){
+            if(!empty($tests)){
                 $testData = [];
-                parse_str($this->getData(self::DATAURL.'anyToUpload.php', array('userID' => intval($uniqueUser), 'tests' => implode(', ', $tests), 'completed' => implode(', ', $complete))), $testData);
+                parse_str($this->getData($this->dataURL.'anyToUpload.php', array('userID' => $uniqueUser, 'tests' => implode(', ', $tests), 'completed' => implode(', ', $complete))), $testData);
                 if($testData['newerTest'] == 'true'){return $testData['tests'];}
             }
         }
@@ -247,7 +250,7 @@ class AppLink extends TheoryTest{
      */
     public function hasUserAccount(){
         $testData = [];
-        parse_str($this->getData(self::DATAURL.'userExists.php', array('email' => self::$user->getUserInfo()['email'])), $testData);
+        parse_str($this->getData($this->dataURL.'userExists.php', array('email' => self::$user->getUserInfo()['email'])), $testData);
         if($testData['exists'] == 'true'){
             $this->setAppID($testData['userID']);
             return $testData['userID'];
@@ -445,8 +448,6 @@ class AppLink extends TheoryTest{
         if(is_array($postData)){
             return $guzzle->post($url, $postData);
         }
-        else{
-            return $guzzle->request('GET', $url);
-        }
+        return $guzzle->request('GET', $url);
     }
 }
