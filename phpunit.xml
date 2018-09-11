@@ -26,5 +26,8 @@
         <var name="USERNAME" value="root" />
         <var name="PASSWORD" value="" />
         <var name="DATABASE" value="theory_db" />
+        
+        <const name="SESSION_NAME" value="ttest" />
+        <const name="DOMAIN" value="mywebsite.co.uk" />
     </php>
 </phpunit>
