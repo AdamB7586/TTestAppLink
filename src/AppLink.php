@@ -211,7 +211,8 @@ class AppLink extends TheoryTest{
      * @return boolean|string If there are newer test locally will return the numbers of newer tests e.g 1,3,7,10 else will return false
      */
     public function anyNewToupload($userID){
-        if($this->getUniqueUser($userID)){
+        $uniqueUser = $this->getUniqueUser($userID);
+        if(is_numeric($uniqueUser)){
             for($testID = 1; $testID <= $this->numSyncTests; $testID++){
                 $testInfo = $this->getLocalTest($userID, $testID);
                 if($testInfo){
@@ -221,7 +222,7 @@ class AppLink extends TheoryTest{
             }
             if($tests){
                 $testData = [];
-                parse_str($this->getData(self::DATAURL.'anyToUpload.php', array('userID' => intval($this->getUniqueUser($userID)), 'tests' => implode(', ', $tests), 'completed' => implode(', ', $complete))), $testData);
+                parse_str($this->getData(self::DATAURL.'anyToUpload.php', array('userID' => intval($uniqueUser), 'tests' => implode(', ', $tests), 'completed' => implode(', ', $complete))), $testData);
                 if($testData['newerTest'] == 'true'){return $testData['tests'];}
             }
         }
