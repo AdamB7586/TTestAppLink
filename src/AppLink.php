@@ -15,15 +15,15 @@ class AppLink extends TheoryTest{
     public $numFlagged = 0;
     public $numSyncTests = 14;
     
-    public $primQuestions = array();
-    public $questionID = array();
-    public $answers = array();
-    public $qStatus = array();
-    public $flagged = array();
+    public $primQuestions = [];
+    public $questionID = [];
+    public $answers = [];
+    public $qStatus = [];
+    public $flagged = [];
     
-    protected $questionsArray = array();
-    protected $answersArray = array();
-    protected $resultsArray = array();
+    protected $questionsArray = [];
+    protected $answersArray = [];
+    protected $resultsArray = [];
     
     protected $newTests = 0;
     
@@ -68,8 +68,7 @@ class AppLink extends TheoryTest{
      * @return datetime This will be the time datetime when the tests were last synced 
      */
     public function getLastSyncDate(){
-        $userInfo = self::$user->getUserInfo();
-        return $userInfo['app_sync_date'];
+        return self::$user->getUserInfo()['app_sync_date'];
     }
     
     /**
@@ -103,14 +102,15 @@ class AppLink extends TheoryTest{
      * @return boolean|array If no new test information is uploaded will return false else will return array from the HTML Data set by Glen
      */
     public function uploadTest($userID, $testID){
-        if($this->getUniqueUser($userID) && ($testID <= 14)){
+        $uniqueUser = $this->getUniqueUser($userID);
+        if(is_numeric($uniqueUser) && ($testID <= 14)){
             $testInfo = $this->getLocalTest($userID, $testID);
-            $serverTest = $this->getServerTestSummary($this->getUniqueUser($userID), $testID);
+            $serverTest = $this->getServerTestSummary($uniqueUser, $testID);
             if(($testInfo['complete'] > $serverTest['date'])){
-                $testData = array();
+                $testData = [];
                 $this->createUploadFormat($testInfo);
                 $postData = array(
-                    'userID' => intval($this->getUniqueUser($userID)),
+                    'userID' => intval($uniqueUser),
                     'testID' => intval($testID),
                     'score' => intval($testInfo['totalscore']),
                     'dateTime' => $testInfo['complete'],
@@ -144,7 +144,7 @@ class AppLink extends TheoryTest{
      * @return array Will return the array data from the HTML data string
      */
     public function downloadTest($userID, $testID){
-        $testData = array();
+        $testData = [];
         parse_str($this->getData(self::DATAURL.'downloadTest.php', array('servernumber' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID)), $testData);
         return $testData;
     }
@@ -157,7 +157,7 @@ class AppLink extends TheoryTest{
      */
     public function getServerTestSummary($userID, $testID){
         if($this->getUniqueUser($userID) !== false){
-            $testData = array();
+            $testData = [];
             parse_str($this->getData(self::DATAURL.'testOverview.php', array('userID' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID)), $testData);
             return $testData;
         }
@@ -194,7 +194,7 @@ class AppLink extends TheoryTest{
         }
         elseif($this->getUniqueUser($userID) !== false){
             if(!$date){$date = $this->getLastSyncDate();}
-            $testData = array();
+            $testData = [];
             parse_str($this->getData(self::DATAURL.'checkNewer.php', array('userID' => intval($this->getUniqueUser($userID)), 'date' => $date)), $testData);
             if($testData['cant'] == 'true'){
                 $this->newTests = 1;
@@ -220,7 +220,7 @@ class AppLink extends TheoryTest{
                 }
             }
             if($tests){
-                $testData = array();
+                $testData = [];
                 parse_str($this->getData(self::DATAURL.'anyToUpload.php', array('userID' => intval($this->getUniqueUser($userID)), 'tests' => implode(', ', $tests), 'completed' => implode(', ', $complete))), $testData);
                 if($testData['newerTest'] == 'true'){return $testData['tests'];}
             }
@@ -237,9 +237,7 @@ class AppLink extends TheoryTest{
         if($this->getAppID($userID)){
             return $this->getAppID($userID);
         }
-        else{
-            return $this->hasUserAccount();
-        }
+        return $this->hasUserAccount();
     }
     
     /**
@@ -247,9 +245,8 @@ class AppLink extends TheoryTest{
      * @return boolean|int If no account exists will return false else will return the userID
      */
     public function hasUserAccount(){
-        $testData = array();
-        $userInfo = self::$user->getUserInfo();
-        parse_str($this->getData(self::DATAURL.'userExists.php', array('email' => $userInfo['email'])), $testData);
+        $testData = [];
+        parse_str($this->getData(self::DATAURL.'userExists.php', array('email' => self::$user->getUserInfo()['email'])), $testData);
         if($testData['exists'] == 'true'){
             $this->setAppID($testData['userID']);
             return $testData['userID'];
