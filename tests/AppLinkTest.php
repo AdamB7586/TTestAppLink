@@ -14,7 +14,7 @@ class AppLinkTest extends TestCase{
     protected static $user;
     protected static $appLink;
 
-    public static function setUpBeforeClass() {
+    public static function setUpBeforeClass(): void {
         self::$db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
         if(!self::$db->isConnected()){
              $this->markTestSkipped(
@@ -32,7 +32,7 @@ class AppLinkTest extends TestCase{
         self::$appLink = new AppLink(self::$db, new Config(self::$db), new Smarty(), self::$user);
     }
     
-    public static function tearDownAfterClass() {
+    public static function tearDownAfterClass(): void {
         self::$appLink = null;
     }
     
