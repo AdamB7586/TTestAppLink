@@ -60,7 +60,7 @@ class AppLink extends TheoryTest{
      */
     public function setAppID($app_user_id){
         if(is_numeric($app_user_id) && $app_user_id >= 1){
-            return self::$db->update($this->user->table_users, array('app_userid' => $app_user_id), array('uid' => $this->getUserID()));
+            return self::$db->update($this->user->table_users, ['app_userid' => $app_user_id], ['uid' => $this->getUserID()]);
         }
         return false;
     }
@@ -84,7 +84,7 @@ class AppLink extends TheoryTest{
             $dateTime->setTimezone($this->user->site_timezone);
             $date = $dateTime->format('Y-m-d H:i:s');
         }
-        return self::$db->update($this->user->table_users, array('app_sync_date' => $date), array('uid' => $this->getUserID()));
+        return self::$db->update($this->user->table_users, ['app_sync_date' => $date], ['uid' => $this->getUserID()]);
     }
 
     /**
@@ -94,7 +94,7 @@ class AppLink extends TheoryTest{
      * @return array|false If the test exists the information will be returned as an array else will return false
      */
     public function getLocalTest($userID, $testID){
-        return self::$db->select($this->progressTable, array('user_id' => $userID, 'test_id' => $testID, 'type' => $this->getTestType(), 'status' => 2));
+        return self::$db->select($this->progressTable, ['user_id' => $userID, 'test_id' => $testID, 'type' => $this->getTestType(), 'status' => 2]);
     }
 
     /**
@@ -147,7 +147,7 @@ class AppLink extends TheoryTest{
      */
     public function downloadTest($userID, $testID){
         $testData = [];
-        parse_str($this->getData($this->dataURL.'downloadTest.php', array('servernumber' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID)), $testData);
+        parse_str($this->getData($this->dataURL.'downloadTest.php', ['servernumber' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID]), $testData);
         return $testData;
     }
     
@@ -160,7 +160,7 @@ class AppLink extends TheoryTest{
     public function getServerTestSummary($userID, $testID){
         if($this->getUniqueUser($userID) !== false){
             $testData = [];
-            parse_str($this->getData($this->dataURL.'testOverview.php', array('userID' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID)), $testData);
+            parse_str($this->getData($this->dataURL.'testOverview.php', ['userID' => intval($this->getUniqueUser($userID)), 'testNumber' => $testID]), $testData);
             return $testData;
         }
         return false;
@@ -197,7 +197,7 @@ class AppLink extends TheoryTest{
         elseif($this->getUniqueUser($userID) !== false){
             if(!$date){$date = $this->getLastSyncDate();}
             $testData = [];
-            parse_str($this->getData($this->dataURL.'checkNewer.php', array('userID' => intval($this->getUniqueUser($userID)), 'date' => $date)), $testData);
+            parse_str($this->getData($this->dataURL.'checkNewer.php', ['userID' => intval($this->getUniqueUser($userID)), 'date' => $date]), $testData);
             if($testData['cant'] == 'true'){
                 $this->newTests = 1;
                 return true;
@@ -226,7 +226,7 @@ class AppLink extends TheoryTest{
             }
             if(!empty($tests)){
                 $testData = [];
-                parse_str($this->getData($this->dataURL.'anyToUpload.php', array('userID' => $uniqueUser, 'tests' => implode(', ', $tests), 'completed' => implode(', ', $complete))), $testData);
+                parse_str($this->getData($this->dataURL.'anyToUpload.php', ['userID' => $uniqueUser, 'tests' => implode(', ', $tests), 'completed' => implode(', ', $complete)]), $testData);
                 if($testData['newerTest'] == 'true'){return $testData['tests'];}
             }
         }
@@ -251,7 +251,7 @@ class AppLink extends TheoryTest{
      */
     public function hasUserAccount(){
         $testData = [];
-        parse_str($this->getData($this->dataURL.'userExists.php', array('email' => $this->user->getUserInfo()['email'])), $testData);
+        parse_str($this->getData($this->dataURL.'userExists.php', ['email' => $this->user->getUserInfo()['email']]), $testData);
         if($testData['exists'] == 'true'){
             $this->setAppID($testData['userID']);
             return $testData['userID'];
@@ -270,8 +270,8 @@ class AppLink extends TheoryTest{
         $localTest = $this->getLocalTest($userID, $testID);
         if($downloadTest['testdate'] > $localTest['complete']){
             $this->updateDataFormat($downloadTest);
-            self::$db->delete($this->progressTable, array('user_id' => $userID, 'test_id' => $testID, 'type' => $this->getTestType()));
-            return self::$db->insert($this->progressTable, array('user_id' => $userID, 'questions' => serialize($this->questionsArray), 'answers' => serialize($this->answersArray), 'results' => serialize($this->resultsArray), 'test_id' => $testID, 'started' => $downloadTest['testdate'], 'complete' => $downloadTest['testdate'], 'time_taken' => $downloadTest['timeTaken'], 'totalscore' => $downloadTest['finalscore'], 'status' => $this->getTestStatus($downloadTest['finalscore']), 'type' => $this->getTestType()));
+            self::$db->delete($this->progressTable, ['user_id' => $userID, 'test_id' => $testID, 'type' => $this->getTestType()]);
+            return self::$db->insert($this->progressTable, ['user_id' => $userID, 'questions' => serialize($this->questionsArray), 'answers' => serialize($this->answersArray), 'results' => serialize($this->resultsArray), 'test_id' => $testID, 'started' => $downloadTest['testdate'], 'complete' => $downloadTest['testdate'], 'time_taken' => $downloadTest['timeTaken'], 'totalscore' => $downloadTest['finalscore'], 'status' => $this->getTestStatus($downloadTest['finalscore']), 'type' => $this->getTestType()]);
         }
         return false;
     }
@@ -312,10 +312,8 @@ class AppLink extends TheoryTest{
     public function getStatusValue($status){
         if($status == 1){return 4;} // Correct
         elseif($status == 2){return 3;} // Incorrect
-        else{// Incomplete or unattempted
-            $this->numIncomplete = intval($this->numIncomplete + 1);
-            return 0;
-        }
+        $this->numIncomplete = intval($this->numIncomplete + 1);
+        return 0; // Incomplete or unattempted
     }
     
     /**
@@ -345,31 +343,27 @@ class AppLink extends TheoryTest{
      * Converts the alphabetical string value in my database to numerous integer values for answers selected in the Software/App database
      * @param string $answer This should be the string value of the answers selected for the questions
      * @param int $testID This should be the test ID for the answers as when uploading multiple causes issues if not set
+     * @param array $options This should be the available options in an array format with option number as the key
      * @return void
      */
-    protected function convertAnswers($answer, $testID){
-        if(strpos($answer, 'A') !== false){$this->answers[$testID][1][] = 1;}else{$this->answers[$testID][1][] = 0;}
-        if(strpos($answer, 'B') !== false){$this->answers[$testID][2][] = 1;}else{$this->answers[$testID][2][] = 0;}
-        if(strpos($answer, 'C') !== false){$this->answers[$testID][3][] = 1;}else{$this->answers[$testID][3][] = 0;}
-        if(strpos($answer, 'D') !== false){$this->answers[$testID][4][] = 1;}else{$this->answers[$testID][4][] = 0;}
-        if(strpos($answer, 'E') !== false){$this->answers[$testID][5][] = 1;}else{$this->answers[$testID][5][] = 0;}
-        if(strpos($answer, 'F') !== false){$this->answers[$testID][6][] = 1;}else{$this->answers[$testID][6][] = 0;}
+    protected function convertAnswers($answer, $testID, $options = [1 => 'A', 2 => 'B', 3 => 'C', 4 => 'D', 5 => 'E', 6 => 'F']){
+        foreach($options as $optionNo => $letter){
+            $this->answers[$testID][$optionNo][] = strpos($answer, $letter) !== false ? 1 : 0;
+        }
     }
     
     /**
      * Converts the numerous integer values for answers selected in the Software/App database to an alphabetical string
      * @param array $testdata This should be the test data return from the Software/App database
      * @param int $arraykey This should be the array key value of the question (normally 0 - 49)
+     * @param array $options This should be the available options in an array format with option number as the key
      * @return string Returns an alphabetical string for answers selected
      */
-    protected function getAnswerString($testdata, $arraykey){
+    protected function getAnswerString($testdata, $arraykey, $options = [1 => 'A', 2 => 'B', 3 => 'C', 4 => 'D', 5 => 'E', 6 => 'F']){
         $answer = '';
-        if($testdata['mockanswer1'.$arraykey] == 1){$answer.='A';}
-        if($testdata['mockanswer2'.$arraykey] == 1){$answer.='B';}
-        if($testdata['mockanswer3'.$arraykey] == 1){$answer.='C';}
-        if($testdata['mockanswer4'.$arraykey] == 1){$answer.='D';}
-        if($testdata['mockanswer5'.$arraykey] == 1){$answer.='E';}
-        if($testdata['mockanswer6'.$arraykey] == 1){$answer.='F';}
+        foreach($options as $optionNo => $letter){
+            if($testdata['mockanswer'.$optionNo.$arraykey] == 1){$answer.=$letter;}
+        }
         return $answer;
     }
     
@@ -389,8 +383,7 @@ class AppLink extends TheoryTest{
      * @return int Returns the DSA Category number of the current question
      */
     protected function getDSACat($prim){
-        $dsacat = self::$db->select($this->questionsTable, array('prim' => $prim), array('dsacat'));
-        return $dsacat['dsacat'];
+        return self::$db->fetchColumn($this->questionsTable, ['prim' => $prim], ['dsacat']);
     }
     
     /**
@@ -441,7 +434,7 @@ class AppLink extends TheoryTest{
     /**
      * Gets the HTML data from a given URL
      * @param string $url The URL you wish to get the data from
-     * @param array|null $postData If you wish to set $_POST data to send to the page set the array values as array('$key' => $value);
+     * @param array|null $postData If you wish to set $_POST data to send to the page set the array values as ['$key' => $value];
      * @return string The HTML data will be returned as a string
      */
     protected function getData($url, $postData = NULL){
