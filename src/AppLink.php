@@ -10,7 +10,7 @@ class AppLink extends TheoryTest{
     
     protected $dataURL;
     
-    protected $appID;
+    protected $appID = false;
     
     public $numIncomplete = 0;
     public $numFlagged = 0;
@@ -91,7 +91,7 @@ class AppLink extends TheoryTest{
      * Gets Test data from the local database
      * @param int $userID The user ID of the person you wish to get the test for
      * @param int $testID The Test ID for the test you wish to get the information for
-     * @return array|boolean If the test exists the information will be returned as an array else will return false
+     * @return array|false If the test exists the information will be returned as an array else will return false
      */
     public function getLocalTest($userID, $testID){
         return self::$db->select($this->progressTable, array('user_id' => $userID, 'test_id' => $testID, 'type' => $this->getTestType(), 'status' => 2));
@@ -109,7 +109,7 @@ class AppLink extends TheoryTest{
             $testInfo = $this->getLocalTest($userID, $testID);
             $serverTest = $this->getServerTestSummary($uniqueUser, $testID);
             $testData = [];
-            if(($testInfo['complete'] > $serverTest['date'])){
+            if($testInfo !== false && $testInfo['complete'] > $serverTest['date']){
                 $this->createUploadFormat($testInfo);
                 $postData = [
                     'userID' => $uniqueUser,
@@ -239,7 +239,7 @@ class AppLink extends TheoryTest{
      * @return int|boolean If an app user ID exists will return that userID else will return false
      */
     public function getUniqueUser($userID){
-        if($this->getAppID($userID)){
+        if($this->getAppID($userID) !== false){
             return $this->getAppID($userID);
         }
         return $this->hasUserAccount();
