@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "adamb/ttest": "^2.2",
+        "adamb/ttest": "*",
         "guzzlehttp/guzzle": "^6.3",
         "adamb/user": "^1.1"
     },
